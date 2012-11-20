@@ -6,8 +6,6 @@ Created with [Ember.js](http://emberjs.com) and Hans Hillsen's [jQuery UI](http:
 
 Jan Bobisud ([bobisjan@fel.cvut.cz](bobisjan@fel.cvut.cz))
 
-Department of Computer Graphics and Interaction
-
-Faculty of Electrical Engineering
-
+Department of Computer Graphics and Interaction  
+Faculty of Electrical Engineering  
 Czech Technical University in Prague
