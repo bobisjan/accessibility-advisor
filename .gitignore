@@ -1,0 +1,12 @@
+.project
+
+# Espresso project files #
+######################
+*.esproj
+
+# OS X files #
+######################
+.DS_Store*
+ehthumbs.db
+Icon?
+Thumbs.db
