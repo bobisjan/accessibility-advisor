@@ -345,7 +345,7 @@ App.ResultController = Em.ObjectController.extend({
 
     var self = this,
         questions = App.store.findAll(App.Question),
-        url = "/Accessible%20Advisor%20API/result",
+        url = "/Accessibility%20Advisor%20API/result",
         tmp = null,
         answers = null,
         parameters = {};
