@@ -307,11 +307,6 @@ App.SurveyView = Em.View.extend({
           ui: { select_limit: 1 },
           plugins: ['html_data', 'ui', 'themes', 'hotkeys']
         });
-
-        jsTree.click(function() {
-          var selectedNode =jsTree.jstree('get_selected');
-          alert(selectedNode.data('type') + ": " + selectedNode.data('id'));
-        });
       }.observes('App.answersController.@each.checked'),
 
       goToResultView: UI.ButtonView.extend({
