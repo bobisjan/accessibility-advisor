@@ -118,14 +118,199 @@
   </script>
 
   <script type="text/x-handlebars" data-template-name="result">
-    <h2>Result</h2>
     {{#if isLoaded}}
-      <p>Result is loaded...</p>
+      {{view view.tabsBar contentBinding="content"}}
+    
+      {{#each tab in content}}
+        <div {{bindAttr id="tab.tabTarget"}}>
+          {{#if tab.isRecommendations}}
+            {{view view.recommendationsView contentBinding="tab"}}
+          {{/if}}
+          {{#if tab.isPersonas}}
+            {{view view.personasView contentBinding="tab"}}
+          {{/if}}
+          {{#if tab.isTools}}
+            {{view view.toolsView contentBinding="tab"}}
+          {{/if}}
+          
+          <hr>
+          
+          {{#if tab.hasPrevious}}
+            {{view view.previousView label="Previous"}}
+          {{/if}}
+          
+          {{#if tab.hasNext}}
+            {{view view.nextView label="Next" disabledBinding="tab.isNotValid"}}
+          {{/if}}
+          
+          <hr>
+          {{view view.goBackView}}
+        </div>
+      {{/each}}
     {{else}}
-      <p>Loading result...</p>
+        <p>Loading result...</p>
     {{/if}}
-    <hr>
-    {{view view.goBackView}}
+  </script>
+  
+  <script type="text/x-handlebars" data-template-name="recommendations">
+    {{#each recommendation in tab.content}}
+      <h3>{{recommendation.title}}</h3>
+      <div>
+        {{#if recommendation.isGeneral}}
+          {{#each item in recommendation.content}}
+          <h4><a {{bindAttr href="item.url"}} target="_blank">{{item.title}}</a></h4>
+          <p>{{item.description}}</p>
+          <hr>
+          {{/each}}
+        {{else}}
+          {{#if recommendation.description}}
+            <h4>Description</h4>
+            {{recommendation.description}}
+            <hr>
+          {{/if}}
+        
+          {{#if recommendation.stressDescription}}
+            <h4>Stress Conditions</h4>
+            {{recommendation.stressDescription}}
+            <hr>
+          {{/if}}
+        
+          {{#if recommendation.developerToolFamily}}
+            <h4>Developer Tool Family</h4>
+            <p>The &quot;{{recommendation.developerToolFamily}}&quot; can help you implement this recommendation.</p>
+            <hr>
+          {{/if}}
+        
+          {{#if recommendation.impairments}}
+            <h4>Impairments</h4>
+            {{#collection contentBinding="recommendation.impairments" tagName="ul"}}
+              {{view.content}}
+            {{/collection}}
+            <hr>
+          {{/if}}
+        
+          {{#if recommendation.disabilities}}
+            <h4>Disabilities</h4>
+            {{#collection contentBinding="recommendation.disabilities" tagName="ul"}}
+              {{view.content}}
+            {{/collection}}
+            <hr>
+          {{/if}}
+        
+          {{#if recommendation.noises}}
+            <h4>Environment Noisiness</h4>
+            {{#collection contentBinding="recommendation.noises" tagName="ul"}}
+              {{view.content}}
+            {{/collection}}
+            <hr>
+          {{/if}}
+        
+          {{#if recommendation.lights}}
+            <h4>Lighting Conditions</h4>
+            {{#collection contentBinding="recommendation.lights" tagName="ul"}}
+              {{view.content}}
+            {{/collection}}
+            <hr>
+          {{/if}}
+        
+          {{#if recommendation.ages}}
+            <h4>Age Groups</h4>
+            {{#collection contentBinding="recommendation.ages" tagName="ul"}}
+              {{view.content}}
+            {{/collection}}
+            <hr>
+          {{/if}}
+        {{/if}}
+      </div>
+    {{/each}}
+  </script>
+  
+  <script type="text/x-handlebars" data-template-name="personas">
+    {{#each persona in tab.content}}
+      <h3>{{persona.fullName}} ({{#if persona.isPrimary}}primary{{else}}secondary{{/if}})</h3>
+      <div>
+        <h4>Details</h4>
+        <dl>
+          {{#if persona.age}}<dt>Age</dt><dd>{{persona.age}}</dd>{{/if}}
+          {{#if persona.meritalStatus}}<dt>Merital Status</dt><dd>{{persona.meritalStatus}}</dd>{{/if}}
+          {{#if persona.living}}<dt>Living</dt><dd>{{persona.living}}</dd>{{/if}}
+          {{#if persona.children}}<dt>Children</dt><dd>{{persona.children}}</dd>{{/if}}
+          {{#if persona.location}}<dt>Location</dt><dd>{{persona.location}}</dd>{{/if}}
+          {{#if persona.education}}<dt>Education</dt><dd>{{persona.education}}</dd>{{/if}}
+          {{#if persona.job}}<dt>Job</dt><dd>{{persona.job}}</dd>{{/if}}
+          {{#if persona.impairment}}<dt>Impairment</dt><dd>{{persona.impairment}}</dd>{{/if}}
+        </dl>
+        <hr>
+        
+        {{#if persona.format}}
+          <h4>Introduction</h4>
+          <p>{{persona.introduction}}</p>
+          <hr>
+          <h4>Technology use</h4>
+          <p>{{persona.technology}}</p>
+          <hr>
+          <h4>Problems</h4>
+          <p>{{persona.problems}}</p>
+          <hr>
+          <h4>Needs and wants</h4>
+          <p>{{persona.needs}}</p>
+          <hr>
+          <h4>Last Month...</h4>
+          <p>{{persona.month}}</p>
+          <hr>
+        {{else}}
+          <p>{{persona.freeText}}</p>
+          <hr>
+        {{/if}}
+      </div>
+    {{/each}}
+  </script>
+  
+  <script type="text/x-handlebars" data-template-name="tools">
+    {{#each tool in tab.content}}
+      <h3>{{tool.title}}</h3>
+      <div>
+        {{tool.description}}
+        
+        <hr>
+        
+        {{#if tool.categories}}
+          <h4>Categories</h4>
+          {{#collection contentBinding="tool.categories" tagName="ul"}}
+            {{view.content}}
+          {{/collection}}
+          <hr>
+        {{/if}}
+        
+        {{#if tool.developerPlatforms}}
+          <h4>Developer Platforms</h4>
+          {{#collection contentBinding="tool.developerPlatforms" tagName="ul"}}
+            {{view.content}}
+          {{/collection}}
+          <hr>
+        {{/if}}
+        
+        {{#if tool.userPlatforms}}
+          <h4>User Platforms</h4>
+          {{#collection contentBinding="tool.userPlatforms" tagName="ul"}}
+            {{view.content}}
+          {{/collection}}
+          <hr>
+        {{/if}}
+        
+        {{#if tool.homePageUrl}}
+          {{view UI.LinkView urlBinding="tool.homePageUrl" label="Homepage"}}
+        {{/if}}
+        
+        {{#if tool.documentationUrl}}
+          {{view UI.LinkView urlBinding="tool.documentationUrl" label="Documentation"}}
+        {{/if}}
+        
+        {{#if tool.tutorialUrl}}
+          {{view UI.LinkView urlBinding="tool.tutorialUrl" label="Tutorial"}}
+        {{/if}}
+      </div>
+    {{/each}}
   </script>
 
   <!-- The missing protocol means that it will match the current protocol, either http or https. If running locally, we use the local jQuery. -->

@@ -337,8 +337,12 @@ App.SurveyView = Em.View.extend({
   })
 });
 
-App.ResultController = Em.ObjectController.extend({
+App.ResultController = Em.ArrayController.extend({
   isLoaded: false,
+
+  content: [],
+  
+  selected: null,
 
   load: function() {
     this.set('isLoaded', false);
@@ -384,13 +388,70 @@ App.ResultController = Em.ObjectController.extend({
 
   unload: function() {
     this.set('isLoaded', false);
-    this.set('content', null);
+    this.set('selected', null);
+    this.clear();
   },
 
-  _didLoadResult: function(data) {
-    this.set('content', Em.Object.create(data));
+  _didLoadResult: function(data) { 
+    for (item in data.result) {
+      var tab = Em.Object.create({
+        isRecommendations: function() {
+          return this.get('id') === 'recommendations';
+        }.property('id'),
+        isPersonas: function() {
+          return this.get('id') === 'personas';
+        }.property('id'),
+        isTools: function() {
+          return this.get('id') === 'tools';
+        }.property('id'),
+        
+        next: null,
+        previous: null,
+        
+        hasNext: function() {
+          return !Em.none(this.get('next'));
+        }.property('next'),
+        
+        hasPrevious: function() {
+        	return !Em.none(this.get('previous'));
+        }.property('previous')
+      });
+      
+      tab.set('tabId', "tab" + item.dasherize());
+      tab.set('tabHref', "#tab-content-" + item.dasherize());
+      tab.set('tabTarget', "tab-content-" + item.dasherize());
+      tab.set('id', item);
+      tab.set('title', item.classify());
+      
+      var items = data.result[item];
+      
+      if (items && items.get('length')) {
+        tab.set('content', items.map(function(item, index, self) {
+          return Em.Object.create(item);
+        }));   
+      } else {
+        tab.set('content', []);
+      }
+      this.pushObject(tab);
+    }
+    
+    var self = this;
+    var content = this.get('content');
+    var length = content.get('length');
+    
+    content.forEach(function(item, index) {
+      if (index === 0) {
+        self.set('selected', item);
+      }
+      if (index > 0) {
+        item.set('previous', content.objectAt(index - 1));
+      }
+      if (index < length - 1) {
+        item.set('next', content.objectAt(index + 1));
+      }
+    });
+    
     this.set('isLoaded', true);
-    this.get('view').$().tabs({heightStyle: 'content'});
   },
 
   _didError: function(error) {
@@ -407,8 +468,96 @@ App.ResultController = Em.ObjectController.extend({
     App.get('router').get('surveyController').selectSummary();
   }
 });
-App.ResultView = Em.View.extend({
+App.ResultView = UI.TabsView.extend({
   templateName: 'result',
+  
+  heightStyle: 'content',
+  
+  init: function() {
+    this._super();
+    // fixes something
+    App.router.get('resultController').set('view', this);
+  },
+  
+  activate: function() {
+    var controller = App.router.get('resultController'),
+        ui = this.get('ui'),
+        index = ui.option('active');
+
+    controller.set('selected', controller.objectAt(index));
+  },
+  
+  // fixes UI.TabsView.tabsBar observer
+  tabsChanged: function() {
+    var self = this;
+    var content = this.get('controller').get('content');
+    var ui = this.get('ui');
+        
+    if (content && ui) {
+      Em.run.schedule('afterRender', function() {
+        ui.refresh();
+        content.forEach(function(item, index) {
+        	if (index === 0) {
+        		ui.option('active', index);
+        	} else if (item.get('isDisabled')) {
+        		ui.disable(index);
+        	} else {
+        		ui.enable(index);
+        	}
+        });
+      });
+    }
+  }.observes('controller.content.@each'),
+
+  recommendationsView: UI.AccordionView.extend({
+    templateName: 'recommendations',
+    
+    header: 'h3',
+    heightStyle: 'content',
+    collapsible: true
+  }),
+  
+  personasView: UI.AccordionView.extend({
+    templateName: 'personas',
+    
+    header: 'h3',
+    heightStyle: 'content',
+    collapsible: true
+  }),
+  
+  toolsView: UI.AccordionView.extend({
+    templateName: 'tools',
+    
+    header: 'h3',
+    heightStyle: 'content',
+    collapsible: true
+  }),
+  
+  nextView: UI.ButtonView.extend({
+    click: function() {
+      var controller = App.router.get('resultController'),
+          selected = controller.get('selected'),
+          ui = this.get('parentView').get('ui'),
+          index = ui.option('active');
+
+      if (selected && selected.get('hasNext')) {
+        ui.option('active', index + 1);
+      }
+    }
+  }),
+
+  previousView: UI.ButtonView.extend({
+    click: function() {
+      var controller = App.router.get('resultController'),
+          selected = controller.get('selected'),
+          ui = this.get('parentView').get('ui'),
+          index = ui.option('active');
+
+      if (selected && selected.get('hasPrevious')) {
+        ui.option('active', index - 1);
+      }
+    }
+  }),
 
   goBackView: UI.ButtonView.extend({
     label: 'Go Back',
@@ -437,8 +586,8 @@ App.Router = Em.Router.extend({
           router.send('goToSurvey');
           return;
         }
-        router.get('resultController').load();
         router.get('applicationController').connectOutlet('result');
+        router.get('resultController').load();
       },
       exit: function (router) {
         router.get('resultController').unload();
