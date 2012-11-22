@@ -119,6 +119,19 @@ UI.ButtonView = Em.View.extend(UI.Widget, {
 
 
 /**
+ * UI.LinkView
+ */
+UI.LinkView = UI.ButtonView.extend({
+  url: "",
+  
+  click: function() {
+    window.location = this.get('url');
+  }
+});
+
+
+
+/**
  * UI.MenuView
  */
 UI.MenuView = Em.CollectionView.extend(UI.Widget, {
@@ -185,13 +198,13 @@ UI.TabsView = Em.View.extend(UI.Widget, {
         ui.refresh();
         
         self.get('content').forEach(function(item, index) {
-        	if (index === 0) {
-//        		ui.option('active', index);
-        	} else if (item.get('isDisabled')) {
-        		ui.disable(index);
-        	} else {
-        		ui.enable(index);
-        	}
+          if (index === 0) {
+//            ui.option('active', index);
+          } else if (item.get('isDisabled')) {
+            ui.disable(index);
+          } else {
+            ui.enable(index);
+          }
         });
       });
     }
@@ -203,15 +216,14 @@ UI.TabsView = Em.View.extend(UI.Widget, {
   	if (!ui) return;
   	
   	this.get('content').forEach(function(item, index) {
-  		if (index === 0) {
-//  			ui.option('active', index);
-  		} else if (item.get('isDisabled')) {
-  			ui.disable(index);
-  		} else {
-  			ui.enable(index);
-  		}
-  	});
-  	
+  	  if (index === 0) {
+//  	    ui.option('active', index);
+      } else if (item.get('isDisabled')) {
+        ui.disable(index);
+      } else {
+        ui.enable(index);
+      }
+  	});	
   }.observes('content.@each.isDisabled')
 });
 
@@ -221,19 +233,19 @@ UI.TabsView = Em.View.extend(UI.Widget, {
  * UI.AccordionView
  */
 UI.AccordionView = Em.View.extend(UI.Widget, {
-	uiType: 'accordion',
-	uiOptions: ['disabled', 'header', 'heightStyle', 'collapsible'],
-	uiEvents: ['select'],
-	
-	contentChanged: function() {
-		var ui = this.get('ui');
-		
-    if(ui) {
+  uiType: 'accordion',
+  uiOptions: ['disabled', 'header', 'heightStyle', 'collapsible'],
+  uiEvents: ['select'],
+
+  contentChanged: function() {
+    var ui = this.get('ui');
+    
+    if (ui) {
       Em.run.schedule('render', function(){
         ui.refresh();
       });
     }
-	}.observes('content.@each')
+  }.observes('content.@each')
 });
 
 
@@ -287,12 +299,12 @@ Ember.Radio = Ember.View.extend({
     var radios = parent.$('input[type="radio"]');
     
     parent.get('childViews').forEach(function(item) {
-    	var radio = item.get('childViews').objectAt(0);
-    	
-    	if (radio.$().attr('id') !== self.$().attr('id')) {
-    		set(radio, 'checked', false);
-    		item.$().removeAttr('checked');
-    	}
+      var radio = item.get('childViews').objectAt(0);
+
+      if (radio.$().attr('id') !== self.$().attr('id')) {
+        set(radio, 'checked', false);
+        item.$().removeAttr('checked');
+      }
     });
     set(this, 'checked', this.$().prop('checked'));
   }
