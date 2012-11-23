@@ -119,37 +119,41 @@
 
   <script type="text/x-handlebars" data-template-name="result">
     {{#if isLoaded}}
+      {{view view.tabsView contentBinding="content"}}
+    {{else}}
+      <p>Loading result...</p>
+    {{/if}}
+  </script>
+  
+  <script type="text/x-handlebars" data-template-name="resultTabs">
       {{view view.tabsBar contentBinding="content"}}
-    
+      
       {{#each tab in content}}
         <div {{bindAttr id="tab.tabTarget"}}>
-          {{#if tab.isRecommendations}}
-            {{view view.recommendationsView contentBinding="tab"}}
-          {{/if}}
-          {{#if tab.isPersonas}}
-            {{view view.personasView contentBinding="tab"}}
-          {{/if}}
-          {{#if tab.isTools}}
-            {{view view.toolsView contentBinding="tab"}}
-          {{/if}}
-          
-          <hr>
-          
-          {{#if tab.hasPrevious}}
-            {{view view.previousView label="Previous"}}
-          {{/if}}
-          
-          {{#if tab.hasNext}}
-            {{view view.nextView label="Next" disabledBinding="tab.isNotValid"}}
-          {{/if}}
-          
-          <hr>
-          {{view view.goBackView}}
-        </div>
-      {{/each}}
-    {{else}}
-        <p>Loading result...</p>
-    {{/if}}
+            {{#if tab.isRecommendations}}
+              {{view view.recommendationsView contentBinding="tab"}}
+            {{/if}}
+            {{#if tab.isPersonas}}
+              {{view view.personasView contentBinding="tab"}}
+            {{/if}}
+            {{#if tab.isTools}}
+              {{view view.toolsView contentBinding="tab"}}
+            {{/if}}
+            
+            <hr>
+            
+            {{#if tab.hasPrevious}}
+              {{view view.previousView label="Previous"}}
+            {{/if}}
+            
+            {{#if tab.hasNext}}
+              {{view view.nextView label="Next" disabledBinding="tab.isNotValid"}}
+            {{/if}}
+            
+            <hr>
+            {{view view.goBackView}}
+          </div>
+        {{/each}}
   </script>
   
   <script type="text/x-handlebars" data-template-name="recommendations">

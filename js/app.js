@@ -123,7 +123,8 @@ App.SurveyController = Em.ArrayController.extend({
   selected: null,
 	
   content: function() {
-    var tabs = [],
+    var self = this,
+        tabs = [],
         groups = this.get('groups');
 
     tabs = groups.map(function(item, index, self) {
@@ -137,11 +138,14 @@ App.SurveyController = Em.ArrayController.extend({
       tabs[tabs.get('length')] = this.get('summary');
     }
 
-    tabs.forEach(function(item, index, self) {
+    tabs.forEach(function(item, index) {
+	  if (index === 0) {
+	    self.set('selected', item);
+	  }
 	  if (index > 0) {
         item.set('previous', tabs[index - 1]);
       }
-      if (index < (self.get('length') - 1)) {
+      if (index < (tabs.get('length') - 1)) {
         item.set('next', tabs[index + 1]);
       }
     });
@@ -151,10 +155,6 @@ App.SurveyController = Em.ArrayController.extend({
   isValid: function() {
     return this.get('summary').get('isValid');
   }.property('summary.isValid'),
-
-  selectSummary: function() {
-    this.set('selected', this.get('summary'));
-  },
 
   summary: Em.Object.create({
     tabId: "tab0",
@@ -193,24 +193,49 @@ App.SurveyController = Em.ArrayController.extend({
 App.SurveyView = Em.View.extend({
   templateName: 'survey',
 
+  init: function() {
+    this._super();
+    // fixes something
+    App.router.get('surveyController').set('view', this);
+  },
+
   tabsView: UI.TabsView.extend({
     heightStyle: 'content',
+    collapsible: false,
     	
     selectedChanged: function() {
-      var controller = App.router.get('surveyController'),
+      var self = this,
+          controller = App.router.get('surveyController'),
           selected = controller.get('selected'),
-          ui = this.get('ui'),
-          index = controller.lastIndexOf(selected);
-  	    
-      ui.option('active', index);
+          index = controller.get('content').indexOf(selected);
+        
+      Em.run.schedule('afterRender', function() {
+        self.get('ui').option('active', index);
+        self.$('#' + selected.get('tabId')).focus();
+      });
     }.observes('App.router.surveyController.selected'),
     	
     activate: function() {
       var controller = App.router.get('surveyController'),
           index = this.get('ui').option('active'),
           selected = controller.objectAt(index);
-      
+
       controller.set('selected', selected);
+      this.$('#' + selected.get('tabId')).focus();
+    },
+    
+    didInsertElement: function() {
+      this._super();
+      
+      var self = this,
+          selected = this.get('controller').get('selected'),
+          index = this.get('controller').get('content').indexOf(selected);
+      
+      if (index === -1) { return; }
+
+      Em.run.schedule('afterRender', function() {
+        self.get('ui').option('active', index);
+      });
     },
 
     nextView: UI.ButtonView.extend({
@@ -244,7 +269,7 @@ App.SurveyView = Em.View.extend({
 
       header: 'h3',
       heightStyle: 'content',
-      collapsible: true,
+      collapsible: false,
 
       questionView: Em.View.extend({
         templateName: 'question',
@@ -319,16 +344,6 @@ App.SurveyView = Em.View.extend({
         this.reload();
       }
     }),
-
-    didInsertElement: function() {
-      this._super();
-
-      var controller = this.get('parentView').get('controller'),
-          selected = controller.objectAt(index),
-          index = controller.lastIndexOf(selected);
-
-      this.get('ui').option('active', index);
-    }
   })
 });
 
@@ -466,100 +481,121 @@ App.ResultController = Em.ArrayController.extend({
 App.ResultView = UI.TabsView.extend({
   templateName: 'result',
   
-  heightStyle: 'content',
-  
   init: function() {
     this._super();
     // fixes something
     App.router.get('resultController').set('view', this);
   },
   
-  activate: function() {
-    var controller = App.router.get('resultController'),
-        ui = this.get('ui'),
-        index = ui.option('active');
-
-    controller.set('selected', controller.objectAt(index));
-  },
-  
-  // fixes UI.TabsView.tabsBar observer
-  tabsChanged: function() {
-    var self = this;
-    var content = this.get('controller').get('content');
-    var ui = this.get('ui');
+  tabsView: UI.TabsView.extend({
+    templateName: 'resultTabs',
+    
+    heightStyle: 'content',
+      
+      activate: function() {
+        var controller = App.router.get('resultController'),
+            ui = this.get('ui'),
+            index = ui.option('active');
+            tab = controller.objectAt(index);
+    
+        controller.set('selected', tab);
+        this.$('#' + tab.get('tabId')).focus();
+      },
+      
+      //fixes UI.TabsView.tabsBar observer
+      tabsChanged: function() {
+        var self = this;
+        var content = this.get('controller').get('content');
+        var ui = this.get('ui');
+            
+        if (content && ui) {
+          Em.run.schedule('afterRender', function() {
+            ui.refresh();
+            content.forEach(function(item, index) {
+            	if (index === 0) {
+            		ui.option('active', index);
+            		self.$('#' + item.get('tabId')).focus();
+            	} else if (item.get('isDisabled')) {
+            		ui.disable(index);
+            	} else {
+            		ui.enable(index);
+            	}
+            });
+          });
+        }
+      }.observes('controller.content.@each'),
+    
+      recommendationsView: UI.AccordionView.extend({
+        templateName: 'recommendations',
         
-    if (content && ui) {
-      Em.run.schedule('afterRender', function() {
-        ui.refresh();
-        content.forEach(function(item, index) {
-        	if (index === 0) {
-        		ui.option('active', index);
-        	} else if (item.get('isDisabled')) {
-        		ui.disable(index);
-        	} else {
-        		ui.enable(index);
-        	}
+        header: 'h3',
+        heightStyle: 'content',
+        collapsible: false
+      }),
+      
+      personasView: UI.AccordionView.extend({
+        templateName: 'personas',
+        
+        header: 'h3',
+        heightStyle: 'content',
+        collapsible: true
+      }),
+      
+      toolsView: UI.AccordionView.extend({
+        templateName: 'tools',
+        
+        header: 'h3',
+        heightStyle: 'content',
+        collapsible: true
+      }),
+      
+      nextView: UI.ButtonView.extend({
+        click: function() {
+          var controller = App.router.get('resultController'),
+              selected = controller.get('selected'),
+              ui = this.get('parentView').get('ui'),
+              index = ui.option('active');
+    
+          if (selected && selected.get('hasNext')) {
+            ui.option('active', index + 1);
+          }
+        }
+      }),
+    
+      previousView: UI.ButtonView.extend({
+        click: function() {
+          var controller = App.router.get('resultController'),
+              selected = controller.get('selected'),
+              ui = this.get('parentView').get('ui'),
+              index = ui.option('active');
+    
+          if (selected && selected.get('hasPrevious')) {
+            ui.option('active', index - 1);
+          }
+        }
+      }),
+    
+      goBackView: UI.ButtonView.extend({
+        label: 'Go Back',
+        click: function() {
+          App.get('router').send('goToSurvey');
+        }
+      }),
+      
+      didInsertElement: function() {
+        this._super();
+              
+        var self = this,
+            selected = this.get('controller').get('selected'),
+            index = this.get('controller').get('content').indexOf(selected);
+
+        if (index === -1) { return; }
+
+        Em.run.schedule('afterRender', function() {
+          self.get('ui').option('active', index);
+          self.$('#' + selected.get('tabId')).focus();
         });
-      });
-    }
-  }.observes('controller.content.@each'),
-
-  recommendationsView: UI.AccordionView.extend({
-    templateName: 'recommendations',
-    
-    header: 'h3',
-    heightStyle: 'content',
-    collapsible: true
-  }),
-  
-  personasView: UI.AccordionView.extend({
-    templateName: 'personas',
-    
-    header: 'h3',
-    heightStyle: 'content',
-    collapsible: true
-  }),
-  
-  toolsView: UI.AccordionView.extend({
-    templateName: 'tools',
-    
-    header: 'h3',
-    heightStyle: 'content',
-    collapsible: true
-  }),
-  
-  nextView: UI.ButtonView.extend({
-    click: function() {
-      var controller = App.router.get('resultController'),
-          selected = controller.get('selected'),
-          ui = this.get('parentView').get('ui'),
-          index = ui.option('active');
-
-      if (selected && selected.get('hasNext')) {
-        ui.option('active', index + 1);
       }
-    }
-  }),
-
-  previousView: UI.ButtonView.extend({
-    click: function() {
-      var controller = App.router.get('resultController'),
-          selected = controller.get('selected'),
-          ui = this.get('parentView').get('ui'),
-          index = ui.option('active');
-
-      if (selected && selected.get('hasPrevious')) {
-        ui.option('active', index - 1);
-      }
-    }
-  }),
-
-  goBackView: UI.ButtonView.extend({
-    label: 'Go Back',
-    click: function() {
-      App.get('router').send('goToSurvey');
-      App.get('router').get('surveyController').selectSummary();
-    }
   })
 });
 

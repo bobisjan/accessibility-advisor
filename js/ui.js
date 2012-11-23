@@ -199,7 +199,8 @@ UI.TabsView = Em.View.extend(UI.Widget, {
         
         self.get('content').forEach(function(item, index) {
           if (index === 0) {
-//            ui.option('active', index);
+            ui.option('active', index);
+            self.$('#' + item.get('tabId')).focus();
           } else if (item.get('isDisabled')) {
             ui.disable(index);
           } else {
