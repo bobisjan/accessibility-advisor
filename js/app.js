@@ -170,7 +170,7 @@ App.SurveyController = Em.ArrayController.extend({
     isSummary: true,
 
     isValid: function() {
-      var previous = this.get('hasPrevious');
+      var previous = this.get('previous');
       if (Ember.none(previous)) { return  false; }; // no groups
       var valid = previous.get('isValid'),
           disabled = previous.get('isDisabled');
