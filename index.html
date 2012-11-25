@@ -35,7 +35,7 @@
 
   <!-- App.SurveyView -->
   <script type="text/x-handlebars" data-template-name="survey">
-    {{#if groups.isLoaded}}
+    {{#if isLoaded}}
       {{view view.tabsView contentBinding="content"}}
     {{else}}
       Loading tabs...

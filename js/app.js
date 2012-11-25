@@ -115,21 +115,29 @@ App.answersController = Em.ArrayController.create({
   content: App.store.findAll(App.Answer)
 });
 
+App.questionsController = Em.ArrayController.create({
+  content: App.store.findAll(App.Question)
+});
+
+App.groupsController = Em.ArrayController.create({
+  content: App.store.findAll(App.Group)
+});
+
 App.ApplicationController = Em.Controller.extend();
 App.ApplicationView = Em.View.extend({
   templateName: 'application',
   classNames: ['app']
 });
 
-App.SurveyController = Em.ArrayController.extend({
-  groups: App.store.findAll(App.Group),
-  
+App.SurveyController = Em.ArrayController.extend({  
   selected: null,
-	
+  
+  isLoadedBinding: 'App.groupsController.content.isLoaded',
+  
   content: function() {
     var self = this,
         tabs = [],
-        groups = this.get('groups');
+        groups = App.groupsController.get('content');
 
     tabs = groups.map(function(item, index, self) {
 	  item.set('tabId', "tab" + item.get('id'));
@@ -154,7 +162,7 @@ App.SurveyController = Em.ArrayController.extend({
       }
     });
     return tabs;
-  }.property('groups.@each'),
+  }.property('App.groupsController.content.@each'),
 	
   isValid: function() {
     return this.get('summary').get('isValid');
@@ -308,7 +316,7 @@ App.SurveyView = Em.View.extend({
       }.property(),
 
       reload: function() {
-        var groups = this.get('parentView').get('controller').get('groups'),
+        var groups = App.groupsController.get('content'),
             jsTree = this.get('tree'),
             tree = '';
 
@@ -364,18 +372,19 @@ App.ResultController = Em.ArrayController.extend({
   content: [],
   
   selected: null,
+  
+  questionsBinding: 'App.questionsController.content',
 
   load: function() {
     this.set('isLoaded', false);
 
     var self = this,
-        questions = App.store.findAll(App.Question),
         url = "/Accessibility%20Advisor%20API/result",
         tmp = null,
         answers = null,
         parameters = {};
 
-    questions.forEach(function(item, index) {
+    this.get('questions').forEach(function(item, index) {
       answers = item.get('answers').filterProperty('checked', true);
 
       if (answers.get('length') === 0) { return; }
