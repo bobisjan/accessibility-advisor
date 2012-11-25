@@ -42,8 +42,12 @@ App.Group = DS.Model.extend({
   
   isDisabled: function() {
   	var previous = this.get('previous');
-  	return (previous) ? !previous.get('isValid') : true;
-  }.property('previous.isValid'),
+  	if (Ember.none(previous)) { return false; }
+  	var valid = previous.get('isValid'),
+  	    disabled = previous.get('isDisabled');
+  	
+  	return !valid || disabled;
+  }.property('previous.isValid', 'previous.isDisabled'),
   
   next: null,
   previous: null,
@@ -166,8 +170,12 @@ App.SurveyController = Em.ArrayController.extend({
     isSummary: true,
 
     isValid: function() {
-      return this.get('hasPrevious') && this.get('previous').get('isValid');
-    }.property('hasPrevious.isValid'),
+      var previous = this.get('hasPrevious');
+      if (Ember.none(previous)) { return  false; }; // no groups
+      var valid = previous.get('isValid'),
+          disabled = previous.get('isDisabled');
+      return valid && !disabled;
+    }.property('previous.isValid', 'previous.isDisabled'),
 
     isNotValid: function() {
       return !this.get('isValid');
@@ -175,8 +183,11 @@ App.SurveyController = Em.ArrayController.extend({
 
     isDisabled: function() {
       var previous = this.get('previous');
-      return (previous) ? !previous.get('isValid') : true;
-    }.property('previous.isValid'),
+      if (Ember.none(previous)) { return false; }
+      var valid = previous.get('isValid'),
+          disabled = previous.get('isDisabled');
+      return !valid || disabled;
+    }.property('previous.isValid', 'previous.isDisabled'),
 
     next: null,
     previous: null,
