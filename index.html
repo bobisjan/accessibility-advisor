@@ -27,11 +27,13 @@
   <![endif]-->
 </head>
 <body>
+  <!-- App.ApplicationView -->
   <script type="text/x-handlebars" data-template-name="application">
     <h1>Accessibility Advisor</h1>
     {{outlet}}
   </script>
 
+  <!-- App.SurveyView -->
   <script type="text/x-handlebars" data-template-name="survey">
     {{#if groups.isLoaded}}
       {{view view.tabsView contentBinding="content"}}
@@ -39,7 +41,8 @@
       Loading tabs...
     {{/if}}
   </script>
-	
+
+  <!-- App.SurveyView.tabsView -->
   <script type="text/x-handlebars" data-template-name="tabs">
     {{view view.tabsBar contentBinding="content"}}
 
@@ -70,6 +73,7 @@
     {{/each}}
   </script>
 
+  <!-- App.SurveyView.tabsView.groupView -->
   <script type="text/x-handlebars" data-template-name="group">
     {{#each question in questions}}
       <h3>{{question.title}}</h3>
@@ -79,6 +83,7 @@
     {{/each}}
   </script>
 
+  <!-- App.SurveyView.tabsView.groupView.questionView -->
   <script type="text/x-handlebars" data-template-name="question">
     {{#if isRadio}}
       {{#each answer in answers}}
@@ -111,12 +116,14 @@
     {{/if}}
   </script>
 
+  <!-- App.SurveyView.tabsView.summaryView -->
   <script type="text/x-handlebars" data-template-name="summary">
     <div class="summary tree"></div>
     <br>
     {{view view.goToResultView label="Get Recommendations" disabledBinding="isNotValid"}}
   </script>
 
+  <!-- App.ResultView -->
   <script type="text/x-handlebars" data-template-name="result">
     {{#if isLoaded}}
       {{view view.tabsView contentBinding="content"}}
@@ -125,6 +132,7 @@
     {{/if}}
   </script>
   
+  <!-- App.ResultView.tabsView -->
   <script type="text/x-handlebars" data-template-name="resultTabs">
       {{view view.tabsBar contentBinding="content"}}
       
@@ -156,6 +164,7 @@
         {{/each}}
   </script>
   
+  <!-- App.ResultView.tabsView.recommendationsView -->
   <script type="text/x-handlebars" data-template-name="recommendations">
     {{#each recommendation in tab.content}}
       <h3>{{recommendation.title}}</h3>
@@ -229,6 +238,7 @@
     {{/each}}
   </script>
   
+  <!-- App.ResultView.tabsView.personasView -->
   <script type="text/x-handlebars" data-template-name="personas">
     {{#each persona in tab.content}}
       <h3>{{persona.fullName}} ({{#if persona.isPrimary}}primary{{else}}secondary{{/if}})</h3>
@@ -270,6 +280,7 @@
     {{/each}}
   </script>
   
+  <!-- App.ResultView.tabsView.toolsView -->
   <script type="text/x-handlebars" data-template-name="tools">
     {{#each tool in tab.content}}
       <h3>{{tool.title}}</h3>
@@ -346,6 +357,8 @@
   <script src="js/ui.js"></script>
 	
   <!--
+    jQuery UI Datepicker Templates
+
 	Reason for separating templates: Refreshing the entire datepicker during interaction confuses screen readers, specfically because
 	the grid heading is marked up as a live region and will often not update if it's destroyed and recreated instead of just having its
 	text change. Additionally, interacting with the prev and next links would cause loss of focus issues because the links being interacted
@@ -410,6 +423,7 @@
     </div>
   </script>
 
+  <!-- Ember.js application -->
   <script src="js/app.js"></script>
 </body>
 </html>
