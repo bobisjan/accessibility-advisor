@@ -379,7 +379,7 @@ App.ResultController = Em.ArrayController.extend({
     this.set('isLoaded', false);
 
     var self = this,
-        url = "/Accessibility%20Advisor%20API/result",
+        url = "/accessibility-advisor-api/result",
         tmp = null,
         answers = null,
         parameters = {};
