@@ -15,7 +15,7 @@ var App = Em.Application.create();
 App.store = DS.Store.create({
   revision: 6,
   adapter: DS.RESTAdapter.create({
-    namespace: 'Accessibility%20Advisor%20API'
+    namespace: 'accessibility-advisor-api'
   })
 });
 
