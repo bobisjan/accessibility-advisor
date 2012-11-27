@@ -49,11 +49,7 @@
     {{#each tab in content}}
       <div {{bindAttr id="tab.tabTarget"}}>
         {{#if tab.isGroup}}
-          {{#if tab.questions.isLoaded}}
-            {{view view.groupView controllerBinding="tab"}}
-          {{else}}
-            Loading questions...
-          {{/if}}
+          {{view view.groupView controllerBinding="tab"}}
         {{/if}}
 
         {{#if tab.isSummary}}
